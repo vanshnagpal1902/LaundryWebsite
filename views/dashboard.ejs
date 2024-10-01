@@ -5,51 +5,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your App</title>
     <style>
-        /* CSS styles for the navbar and content */
-        .navbar {
-            background-color: #333;
-            color: #fff;
-            padding: 10px;
-        }
+     body {
+    margin: 0; /* Remove default body margins */
+}
 
-        .navbar a {
-            color: #fff;
-            margin-right: 10px;
-            text-decoration: none;
-        }
+.navbar {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    height: 40px; /* Fixed height for the navbar */
+    position: fixed; /* Fix the navbar at the top */
+    top: 0; /* Position it at the top */
+    width: 100%; /* Full width */
+    z-index: 1000; /* Ensure it's above other content */
+}
 
-        .content {
-            padding: 20px;
-        }
+.navbar a {
+    color: #fff;
+    margin-right: 10px;
+    text-decoration: none;
+    transition: color 0.3s, text-decoration 0.3s; /* Smooth transition for hover effects */
+}
 
-        /* Rectangular box styles */
-        .form-summary {
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            padding: 10px;
-            cursor: pointer;
-            background-color: #677268; /* Green color */
-            color: #fff; /* Text color */
-        }
+.navbar a:hover {
+    color: #ffd700; /* Gold color on hover */
+    text-decoration: underline; /* Underline effect on hover */
+}
 
-        .form-summary:hover {
-            background-color: #7b827b; /* Darker green on hover */
-        }
+.content {
+    padding: 60px 20px 20px; /* Add padding to the top to avoid overlap with the fixed navbar */
+}
 
-        .form-details table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+/* Rectangular box styles */
+.form-summary {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    padding: 10px;
+    cursor: pointer;
+    background-color: #677268; /* Green color */
+    color: #fff; /* Text color */
+}
 
-        .form-details th, .form-details td {
-            border: 1px solid #ccc;
-            padding: 8px;
-        }
+.form-summary:hover {
+    background-color: #7b827b; /* Darker green on hover */
+}
 
-        .form-details th {
-            background-color: #f2f2f2;
-        }
+.form-details table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.form-details th,
+.form-details td {
+    border: 1px solid #ccc;
+    padding: 8px;
+}
+
+.form-details th {
+    background-color: #f2f2f2;
+}
+
     </style>
 </head>
 <body>
@@ -59,49 +75,49 @@
         <a href="/logout">Logout</a>
         <a href="/delete">Delete Account</a>
     </div>
-<!-- Content area -->
-<div class="content">
-    <!-- Your content goes here -->
-    <h1>Welcome to Your Dashboard</h1>
-    <% if (locals.forms && locals.forms.length > 0) { %>
-        <h2>Your Laundry Forms:</h2>
-        <% locals.forms.forEach((form, index) => { %>
-            <div class="form-summary" onclick="toggleTable(this)">
-                <p>Form <%= index + 1 %></p>
-                <p>Submitted On: <%= form.submittedOn.toLocaleString() %></p>
-                <p>Hostel: <%= user.hostel %></p>
-                <p>Room No: <%= user.room_no %></p>
-                <p>Total Clothes: <%= Object.values(form.clothesData).reduce((total, qty) => total + qty, 0) %></p>
-            </div>
-            <div class="form-details" style="display: none;">
-                <table>
-                    <tr>
-                        <th>Item</th>
-                        <th>Quantity</th>
-                    </tr>
-                    <% Object.entries(form.clothesData).forEach(([item, quantity]) => { %>
+    <!-- Content area -->
+    <div class="content">
+        <!-- Your content goes here -->
+        <h1>Welcome to Your Dashboard</h1>
+        <% if (locals.forms && locals.forms.length > 0) { %>
+            <h2>Your Laundry Forms:</h2>
+            <% locals.forms.forEach((form, index) => { %>
+                <div class="form-summary" onclick="toggleTable(this)">
+                    <p>Form <%= index + 1 %></p>
+                    <p>Submitted On: <%= form.submittedOn.toLocaleString() %></p>
+                    <p>Hostel: <%= user.hostel %></p>
+                    <p>Room No: <%= user.room_no %></p>
+                    <p>Total Clothes: <%= Object.values(form.clothesData).reduce((total, qty) => total + qty, 0) %></p>
+                </div>
+                <div class="form-details" style="display: none;">
+                    <table>
                         <tr>
-                            <td><%= item %></td>
-                            <td><%= quantity %></td>
+                            <th>Item</th>
+                            <th>Quantity</th>
                         </tr>
-                    <% }); %>
-                </table>
-            </div>
-        <% }); %>
-    <% } else { %>
-        <p>No laundry form data found.</p>
-    <% } %>
-</div>
+                        <% Object.entries(form.clothesData).forEach(([item, quantity]) => { %>
+                            <tr>
+                                <td><%= item %></td>
+                                <td><%= quantity %></td>
+                            </tr>
+                        <% }); %>
+                    </table>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <p>No laundry form data found.</p>
+        <% } %>
+    </div>
 
-<script>
-    function toggleTable(element) {
-        const formDetails = element.nextElementSibling;
-        if (formDetails.style.display === "none") {
-            formDetails.style.display = "block";
-        } else {
-            formDetails.style.display = "none";
+    <script>
+        function toggleTable(element) {
+            const formDetails = element.nextElementSibling;
+            if (formDetails.style.display === "none") {
+                formDetails.style.display = "block";
+            } else {
+                formDetails.style.display = "none";
+            }
         }
-    }
-</script>
+    </script>
 </body>
 </html>
