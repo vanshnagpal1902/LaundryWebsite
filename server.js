@@ -122,8 +122,49 @@ app.get("/admin", async (req, res) => {
   res.render("admin", { forms, message: '' });
 });
 
+app.get('/view-by-hostel', async (req, res) => {
+    // Logic to fetch and display forms by selected hostel
+    const hostels = ['Aryabhatta', 'Bose', 'Chanakya', 'Teresa', 'Gargi', 'Kalpana', 'NGH'];
+    res.render('viewByHostel', { hostels });
+});
 
+app.get('/view-weekly', async (req, res) => {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 7);
+    const forms = await LaundryForm.find({ submittedOn: { $gte: startDate } });
+    res.render('weeklyView', { forms });
+});
 
+app.get('/view-monthly', async (req, res) => {
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - 1);
+    const forms = await LaundryForm.find({ submittedOn: { $gte: startDate } });
+    res.render('monthlyView', { forms });
+});
+
+app.get('/total-weekly', async (req, res) => {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 7);
+    const forms = await LaundryForm.find({ submittedOn: { $gte: startDate } });
+    
+    const totalClothes = forms.reduce((total, form) => {
+        return total + (form.clothesData ? Object.values(form.clothesData).reduce((sum, qty) => sum + qty, 0) : 0);
+    }, 0);
+    
+    res.json({ totalClothes });
+});
+
+app.get('/total-monthly', async (req, res) => {
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - 1);
+    const forms = await LaundryForm.find({ submittedOn: { $gte: startDate } });
+    
+    const totalClothes = forms.reduce((total, form) => {
+        return total + (form.clothesData ? Object.values(form.clothesData).reduce((sum, qty) => sum + qty, 0) : 0);
+    }, 0);
+    
+    res.json({ totalClothes });
+});
 
 app.post('/signup', async (req, res) => {
   const { room_no, hostel, password } = req.body;
@@ -170,6 +211,27 @@ app.get('/logout', (req, res) => {
   req.session.destroy();
   res.redirect('/studentlogin');
 });
+
+app.get('/total-clothes', async (req, res) => {
+    const hostels = ['Aryabhatta', 'Bose', 'Chanakya', 'Teresa', 'Gargi', 'Kalpana', 'NGH'];
+    res.render('totalClothes', { hostels });
+});
+
+app.get('/total-clothes-count', async (req, res) => {
+    const { hostel, startDate, endDate } = req.query;
+
+    const forms = await LaundryForm.find({
+        hostel: hostel,
+        submittedOn: { $gte: new Date(startDate), $lt: new Date(endDate) }
+    });
+
+    const totalClothes = forms.reduce((total, form) => {
+        return total + (form.clothesData ? Object.values(form.clothesData).reduce((sum, qty) => sum + qty, 0) : 0);
+    }, 0);
+
+    res.json({ totalClothes });
+});
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT,'0.0.0.0', () => console.log("Server running on port ${3000}"));
