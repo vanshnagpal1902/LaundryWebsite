@@ -1,237 +1,237 @@
-// const express = require('express');
-// const mongoose = require('mongoose');
-// const bodyParser = require('body-parser');
-// const session = require('express-session');
-// const ejs = require('ejs');
+const express = require('express');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const session = require('express-session');
+const ejs = require('ejs');
 
-// const app = express();
-// app.use(bodyParser.json());
-// app.set('view engine', 'ejs');
-// app.use(bodyParser.urlencoded({ extended: true }));
-// app.use(session({
-//   secret: 'your_secret_key',
-//   resave: false,
-//   saveUninitialized: true
-// }));
+const app = express();
+app.use(bodyParser.json());
+app.set('view engine', 'ejs');
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(session({
+  secret: 'your_secret_key',
+  resave: false,
+  saveUninitialized: true
+}));
 
-// mongoose.connect("mongodb+srv://tamanna:abcd1234abcd@cluster0.lklbc3z.mongodb.net/laundry?retryWrites=true&w=majority&appName=Cluster0");
+mongoose.connect("mongodb+srv://tamanna:abcd1234abcd@cluster0.lklbc3z.mongodb.net/laundry?retryWrites=true&w=majority&appName=Cluster0");
 
-// const userSchema = new mongoose.Schema({
-//   room_no: { type: Number, required: true },
-//   hostel: { type: String, required: true },
-//   password: { type: String, required: true }
-// }, { collection: 'students' });
+const userSchema = new mongoose.Schema({
+  room_no: { type: Number, required: true },
+  hostel: { type: String, required: true },
+  password: { type: String, required: true }
+}, { collection: 'students' });
 
-// const laundryschema = new mongoose.Schema({
-//   username: { type: String, required: true },
-//   password: { type: String, required: true },
-//   isAdmin: { type: Boolean, default: true }
-// }, { collection: "laundryperson" })
+const laundryschema = new mongoose.Schema({
+  username: { type: String, required: true },
+  password: { type: String, required: true },
+  isAdmin: { type: Boolean, default: true }
+}, { collection: "laundryperson" })
 
-// const laundryFormSchema = new mongoose.Schema({
-//   user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-//   hostel: { type: String, required: true },
-//   clothesData: { type: Object, required: true },
-//   submittedOn: { type: Date, default: Date.now },
-//   status: { type: String, enum: ['pending', 'picked', 'washed'], default: 'pending' }
-// }, { collection: 'laundryForms' });
+const laundryFormSchema = new mongoose.Schema({
+  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  hostel: { type: String, required: true },
+  clothesData: { type: Object, required: true },
+  submittedOn: { type: Date, default: Date.now },
+  status: { type: String, enum: ['pending', 'picked', 'washed'], default: 'pending' }
+}, { collection: 'laundryForms' });
 
-// const LaundryForm = mongoose.model('LaundryForm', laundryFormSchema);
-// const LaundryPerson = mongoose.model('laundryperson', laundryschema);
-// const User = mongoose.model('User', userSchema);
+const LaundryForm = mongoose.model('LaundryForm', laundryFormSchema);
+const LaundryPerson = mongoose.model('laundryperson', laundryschema);
+const User = mongoose.model('User', userSchema);
 
-// app.get('/', (req, res) => res.render('home'));
-// app.get('/laundrylogin', (req, res) => res.render('loginadmin'));
-// app.get("/delete", (req, res) => res.render("delete"));
-// app.post("/delete", async (req, res) => {
-//   if (!req.session.user) return res.redirect('/studentlogin');
-//   const userId = req.session.user._id;
-//   await User.findByIdAndDelete(userId);
-//   await LaundryForm.deleteMany({ user_id: userId });
-//   req.session.destroy();
-//   res.render('login', { message: 'Account Deleted Successfully!' });
-// });
+app.get('/', (req, res) => res.render('home'));
+app.get('/laundrylogin', (req, res) => res.render('loginadmin'));
+app.get("/delete", (req, res) => res.render("delete"));
+app.post("/delete", async (req, res) => {
+  if (!req.session.user) return res.redirect('/studentlogin');
+  const userId = req.session.user._id;
+  await User.findByIdAndDelete(userId);
+  await LaundryForm.deleteMany({ user_id: userId });
+  req.session.destroy();
+  res.render('login', { message: 'Account Deleted Successfully!' });
+});
 
-// app.post('/update-form-status', async (req, res) => {
-//   if (!req.session.user || !req.session.user.isAdmin) return res.status(403).send('Forbidden');
-//   const { formId, status } = req.body;
-//   const updatedForm = await LaundryForm.findByIdAndUpdate(
-//     new mongoose.Types.ObjectId(formId),
-//     { status },
-//     { new: true }
-//   );
-//   if (!updatedForm) return res.status(404).json({ error: 'Form not found' });
-//   res.json({ message: 'Form status updated successfully' });
-// });
+app.post('/update-form-status', async (req, res) => {
+  if (!req.session.user || !req.session.user.isAdmin) return res.status(403).send('Forbidden');
+  const { formId, status } = req.body;
+  const updatedForm = await LaundryForm.findByIdAndUpdate(
+    new mongoose.Types.ObjectId(formId),
+    { status },
+    { new: true }
+  );
+  if (!updatedForm) return res.status(404).json({ error: 'Form not found' });
+  res.json({ message: 'Form status updated successfully' });
+});
 
-// app.post('/laundrylogin', async (req, res) => {
-//   const { username, password } = req.body;
-//   console.log(`Laundry login attempt: ${username} ${password}`);
-//   try {
-//     const user = await LaundryPerson.findOne({ username, password });
-//     if (user && user.isAdmin) {
-//       req.session.user = user;
-//       console.log(`Laundry login successful: ${username}`);
-//       res.redirect('/admin');
-//     } else {
-//       console.log(`Laundry login failed: ${username}`);
-//       res.render('loginadmin', { error: 'Invalid credentials.' });
-//     }
-//   } catch (err) {
-//     console.error(`Laundry login error: ${err}`);
-//     res.status(500).send('Internal Server Error');
-//   }
-// });
+app.post('/laundrylogin', async (req, res) => {
+  const { username, password } = req.body;
+  console.log(`Laundry login attempt: ${username} ${password}`);
+  try {
+    const user = await LaundryPerson.findOne({ username, password });
+    if (user && user.isAdmin) {
+      req.session.user = user;
+      console.log(`Laundry login successful: ${username}`);
+      res.redirect('/admin');
+    } else {
+      console.log(`Laundry login failed: ${username}`);
+      res.render('loginadmin', { error: 'Invalid credentials.' });
+    }
+  } catch (err) {
+    console.error(`Laundry login error: ${err}`);
+    res.status(500).send('Internal Server Error');
+  }
+});
 
-// app.get('/studentlogin', (req, res) => res.render('login', { message: '' }));
-// app.get('/create-form', (req, res) => res.render('form'));
-// app.get('/signup', (req, res) => res.render('signup'));
+app.get('/studentlogin', (req, res) => res.render('login', { message: '' }));
+app.get('/create-form', (req, res) => res.render('form'));
+app.get('/signup', (req, res) => res.render('signup'));
 
-// app.get("/dashboard", async (req, res) => {
-//   if (!req.session.user) return res.redirect('/login');
-//   const user = await User.findById(req.session.user._id);
-//   const forms = await LaundryForm.find({ user_id: req.session.user._id });
-//   const parsedForms = forms.map(form => {
-//     if (typeof form.clothesData === 'string') form.clothesData = JSON.parse(form.clothesData);
-//     return form;
-//   });
-//   res.render("dashboard", { user, forms: parsedForms });
-// });
+app.get("/dashboard", async (req, res) => {
+  if (!req.session.user) return res.redirect('/login');
+  const user = await User.findById(req.session.user._id);
+  const forms = await LaundryForm.find({ user_id: req.session.user._id });
+  const parsedForms = forms.map(form => {
+    if (typeof form.clothesData === 'string') form.clothesData = JSON.parse(form.clothesData);
+    return form;
+  });
+  res.render("dashboard", { user, forms: parsedForms });
+});
 
-// app.get("/admin", async (req, res) => {
-//   if (!req.session.user || !req.session.user.isAdmin) return res.redirect('/laundrylogin');
-//   const { date, hostel } = req.query;
-//   let filters = {};
-//   if (date) {
-//     const startDate = new Date(date);
-//     const endDate = new Date(startDate);
-//     endDate.setDate(endDate.getDate() + 1);
-//     filters.submittedOn = { $gte: startDate, $lt: endDate };
-//   }
-//   if (hostel) filters.hostel = hostel;
+app.get("/admin", async (req, res) => {
+  if (!req.session.user || !req.session.user.isAdmin) return res.redirect('/laundrylogin');
+  const { date, hostel } = req.query;
+  let filters = {};
+  if (date) {
+    const startDate = new Date(date);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 1);
+    filters.submittedOn = { $gte: startDate, $lt: endDate };
+  }
+  if (hostel) filters.hostel = hostel;
   
-//   let forms = await LaundryForm.find(filters).populate('user_id');
+  let forms = await LaundryForm.find(filters).populate('user_id');
 
-//   // Sort forms based on room_no if the hostel is selected
-//   if (hostel) {
-//     forms = forms.sort((a, b) => a.user_id.room_no - b.user_id.room_no);
-//   } else {
-//     forms = forms.sort((a, b) => a._id - b._id); // Default sorting by form ID
-//   }
+  // Sort forms based on room_no if the hostel is selected
+  if (hostel) {
+    forms = forms.sort((a, b) => a.user_id.room_no - b.user_id.room_no);
+  } else {
+    forms = forms.sort((a, b) => a._id - b._id); // Default sorting by form ID
+  }
   
-//   res.render("admin", { forms, message: '' });
-// });
+  res.render("admin", { forms, message: '' });
+});
 
-// app.get('/view-by-hostel', async (req, res) => {
-//     // Logic to fetch and display forms by selected hostel
-//     const hostels = ['Aryabhatta', 'Bose', 'Chanakya', 'Teresa', 'Gargi', 'Kalpana', 'NGH'];
-//     res.render('viewByHostel', { hostels });
-// });
+app.get('/view-by-hostel', async (req, res) => {
+    // Logic to fetch and display forms by selected hostel
+    const hostels = ['Aryabhatta', 'Bose', 'Chanakya', 'Teresa', 'Gargi', 'Kalpana', 'NGH'];
+    res.render('viewByHostel', { hostels });
+});
 
-// app.get('/view-weekly', async (req, res) => {
-//     const startDate = new Date();
-//     startDate.setDate(startDate.getDate() - 7);
-//     const forms = await LaundryForm.find({ submittedOn: { $gte: startDate } });
-//     res.render('weeklyView', { forms });
-// });
+app.get('/view-weekly', async (req, res) => {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 7);
+    const forms = await LaundryForm.find({ submittedOn: { $gte: startDate } });
+    res.render('weeklyView', { forms });
+});
 
-// app.get('/view-monthly', async (req, res) => {
-//     const startDate = new Date();
-//     startDate.setMonth(startDate.getMonth() - 1);
-//     const forms = await LaundryForm.find({ submittedOn: { $gte: startDate } });
-//     res.render('monthlyView', { forms });
-// });
+app.get('/view-monthly', async (req, res) => {
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - 1);
+    const forms = await LaundryForm.find({ submittedOn: { $gte: startDate } });
+    res.render('monthlyView', { forms });
+});
 
-// app.get('/total-weekly', async (req, res) => {
-//     const startDate = new Date();
-//     startDate.setDate(startDate.getDate() - 7);
-//     const forms = await LaundryForm.find({ submittedOn: { $gte: startDate } });
+app.get('/total-weekly', async (req, res) => {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 7);
+    const forms = await LaundryForm.find({ submittedOn: { $gte: startDate } });
     
-//     const totalClothes = forms.reduce((total, form) => {
-//         return total + (form.clothesData ? Object.values(form.clothesData).reduce((sum, qty) => sum + qty, 0) : 0);
-//     }, 0);
+    const totalClothes = forms.reduce((total, form) => {
+        return total + (form.clothesData ? Object.values(form.clothesData).reduce((sum, qty) => sum + qty, 0) : 0);
+    }, 0);
     
-//     res.json({ totalClothes });
-// });
+    res.json({ totalClothes });
+});
 
-// app.get('/total-monthly', async (req, res) => {
-//     const startDate = new Date();
-//     startDate.setMonth(startDate.getMonth() - 1);
-//     const forms = await LaundryForm.find({ submittedOn: { $gte: startDate } });
+app.get('/total-monthly', async (req, res) => {
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - 1);
+    const forms = await LaundryForm.find({ submittedOn: { $gte: startDate } });
     
-//     const totalClothes = forms.reduce((total, form) => {
-//         return total + (form.clothesData ? Object.values(form.clothesData).reduce((sum, qty) => sum + qty, 0) : 0);
-//     }, 0);
+    const totalClothes = forms.reduce((total, form) => {
+        return total + (form.clothesData ? Object.values(form.clothesData).reduce((sum, qty) => sum + qty, 0) : 0);
+    }, 0);
     
-//     res.json({ totalClothes });
-// });
+    res.json({ totalClothes });
+});
 
-// app.post('/signup', async (req, res) => {
-//   const { room_no, hostel, password } = req.body;
-//   const existingStudent = await User.findOne({ room_no, hostel });
-//   if (existingStudent) return res.send('Room number and hostel already exist.');
-//   const newStudent = new User({ room_no, hostel, password, isAdmin: hostel === 'admin' });
-//   await newStudent.save();
-//   res.redirect('/studentlogin');
-// });
+app.post('/signup', async (req, res) => {
+  const { room_no, hostel, password } = req.body;
+  const existingStudent = await User.findOne({ room_no, hostel });
+  if (existingStudent) return res.send('Room number and hostel already exist.');
+  const newStudent = new User({ room_no, hostel, password, isAdmin: hostel === 'admin' });
+  await newStudent.save();
+  res.redirect('/studentlogin');
+});
 
-// app.post('/studentlogin', async (req, res) => {
-//   const { room_no, hostel, password } = req.body;
-//   const user = await User.findOne({ room_no, hostel, password });
-//   if (user) {
-//     req.session.user = user;
-//     res.redirect('/dashboard');
-//   } else {
-//     res.render('login', { error: 'Invalid credentials.', message: '' }); // Pass message variable
-//   }
-// });
+app.post('/studentlogin', async (req, res) => {
+  const { room_no, hostel, password } = req.body;
+  const user = await User.findOne({ room_no, hostel, password });
+  if (user) {
+    req.session.user = user;
+    res.redirect('/dashboard');
+  } else {
+    res.render('login', { error: 'Invalid credentials.', message: '' }); // Pass message variable
+  }
+});
 
-// app.post('/create-form', async (req, res) => {
-//   if (!req.session.user) return res.redirect('/studentlogin');
-//   const clothesData = req.body.clothesData;
-//   const clothesObject = JSON.parse(clothesData);
-//   const filteredClothesObject = Object.entries(clothesObject)
-//     .filter(([item, quantity]) => quantity !== 0)
-//     .reduce((obj, [item, quantity]) => {
-//       obj[item] = quantity;
-//       return obj;
-//     }, {});
-//   const hostelName = req.session.user.hostel;
-//   const newForm = new LaundryForm({
-//     user_id: req.session.user._id,
-//     hostel: hostelName,
-//     clothesData: filteredClothesObject,
-//     submittedOn: new Date()
-//   });
-//   await newForm.save();
-//   res.redirect('/dashboard');
-// });
+app.post('/create-form', async (req, res) => {
+  if (!req.session.user) return res.redirect('/studentlogin');
+  const clothesData = req.body.clothesData;
+  const clothesObject = JSON.parse(clothesData);
+  const filteredClothesObject = Object.entries(clothesObject)
+    .filter(([item, quantity]) => quantity !== 0)
+    .reduce((obj, [item, quantity]) => {
+      obj[item] = quantity;
+      return obj;
+    }, {});
+  const hostelName = req.session.user.hostel;
+  const newForm = new LaundryForm({
+    user_id: req.session.user._id,
+    hostel: hostelName,
+    clothesData: filteredClothesObject,
+    submittedOn: new Date()
+  });
+  await newForm.save();
+  res.redirect('/dashboard');
+});
 
-// app.get('/logout', (req, res) => {
-//   req.session.destroy();
-//   res.redirect('/studentlogin');
-// });
+app.get('/logout', (req, res) => {
+  req.session.destroy();
+  res.redirect('/studentlogin');
+});
 
-// app.get('/total-clothes', async (req, res) => {
-//     const hostels = ['Aryabhatta', 'Bose', 'Chanakya', 'Teresa', 'Gargi', 'Kalpana', 'NGH'];
-//     res.render('totalClothes', { hostels });
-// });
+app.get('/total-clothes', async (req, res) => {
+    const hostels = ['Aryabhatta', 'Bose', 'Chanakya', 'Teresa', 'Gargi', 'Kalpana', 'NGH'];
+    res.render('totalClothes', { hostels });
+});
 
-// app.get('/total-clothes-count', async (req, res) => {
-//     const { hostel, startDate, endDate } = req.query;
+app.get('/total-clothes-count', async (req, res) => {
+    const { hostel, startDate, endDate } = req.query;
 
-//     const forms = await LaundryForm.find({
-//         hostel: hostel,
-//         submittedOn: { $gte: new Date(startDate), $lt: new Date(endDate) }
-//     });
+    const forms = await LaundryForm.find({
+        hostel: hostel,
+        submittedOn: { $gte: new Date(startDate), $lt: new Date(endDate) }
+    });
 
-//     const totalClothes = forms.reduce((total, form) => {
-//         return total + (form.clothesData ? Object.values(form.clothesData).reduce((sum, qty) => sum + qty, 0) : 0);
-//     }, 0);
+    const totalClothes = forms.reduce((total, form) => {
+        return total + (form.clothesData ? Object.values(form.clothesData).reduce((sum, qty) => sum + qty, 0) : 0);
+    }, 0);
 
-//     res.json({ totalClothes });
-// });
+    res.json({ totalClothes });
+});
 
 
-// const PORT = process.env.PORT || 3000;
-// app.listen(PORT,'0.0.0.0', () => console.log("Server running on port ${3000}"));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT,'0.0.0.0', () => console.log("Server running on port ${3000}"));
